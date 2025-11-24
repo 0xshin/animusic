@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Music Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #111;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .player {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      max-height: 620px;
+      background: #151515;
+      border-radius: 24px;
+      padding: 22px 20px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cover {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #222;
+    }
+
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .info-block {
+      margin-top: 9vh;
+    }
+
+    .track-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+
+    .track-artist {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 18px;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 2px;
+      background: #2a2a2a;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 34px;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      margin-top: -2px;
+    }
+
+    .btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .btn-play {
+      width: 48px;
+      height: 48px;
+      background: #fff;
+      color: #111;
+    }
+
+    .icon-prev,
+    .icon-next,
+    .icon-play,
+    .icon-pause {
+      display: inline-block;
+    }
+
+    .icon-play {
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 12px solid #111;
+      margin-left: 2px;
+    }
+
+    .icon-pause {
+      width: 12px;
+      height: 14px;
+      position: relative;
+    }
+
+    .icon-pause::before,
+    .icon-pause::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: #111;
+      border-radius: 2px;
+    }
+
+    .icon-pause::before { left: 1px; }
+    .icon-pause::after  { right: 1px; }
+
+    .icon-prev {
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-right: 10px solid #fff;
+      position: relative;
+    }
+
+    .icon-prev::before {
+      content: "";
+      position: absolute;
+      right: 6px;
+      top: -7px;
+      width: 2px;
+      height: 14px;
+      background: #fff;
+    }
+
+    .icon-next {
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 10px solid #fff;
+      position: relative;
+    }
+
+    .icon-next::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: -7px;
+      width: 2px;
+      height: 14px;
+      background: #fff;
+    }
+
+    /* Desktop / tablet lebih lebar */
+    @media (min-width: 768px) {
+      body {
+        padding: 40px;
+      }
+
+      .player {
+        max-width: 360px;
+        padding: 26px 24px;
+      }
+
+      .info-block {
+        margin-top: 70px;
+      }
+
+      .track-title {
+        font-size: 1.1rem;
+      }
+
+      .track-artist {
+        font-size: 0.85rem;
+      }
+
+      .time-row {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="audio"></audio>
+
+  <div class="player">
+    <div class="cover">
+      <img id="coverImg" src="cover1.jpg" alt="Cover" />
+    </div>
+
+    <div class="info-block">
+      <div class="track-title" id="titleText">Kanashimi Wo Yasashisa Ni</div>
+      <div class="track-artist" id="artistText">Little by Little</div>
+
+      <div class="time-row">
+        <span id="currentTime">0:00</span>
+        <span id="duration">0:00</span>
+      </div>
+
+      <div class="progress" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="prevBtn" aria-label="Previous">
+        <span class="icon-prev"></span>
+      </button>
+
+      <button class="btn btn-play" id="playBtn" aria-label="Play / Pause">
+        <span class="icon-play" id="playIcon"></span>
+      </button>
+
+      <button class="btn" id="nextBtn" aria-label="Next">
+        <span class="icon-next"></span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const audio        = document.getElementById('audio');
+    const playBtn      = document.getElementById('playBtn');
+    const playIcon     = document.getElementById('playIcon');
+    const prevBtn      = document.getElementById('prevBtn');
+    const nextBtn      = document.getElementById('nextBtn');
+    const progressBar  = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const currentEl    = document.getElementById('currentTime');
+    const durationEl   = document.getElementById('duration');
+    const titleText    = document.getElementById('titleText');
+    const artistText   = document.getElementById('artistText');
+    const coverImg     = document.getElementById('coverImg');
+
+    const tracks = [
+      { src: '1.mp3', title: 'Kanashimi Wo Yasashisa Ni', artist: 'Little by Little', cover: 'cover1.jpg' },
+      { src: '2.mp3', title: 'Taidada', artist: 'Zutomayo', cover: 'cover2.jpg' }
+    ];
+
+    let currentIndex = 0;
+    let isPlaying = false;
+    let isSeeking = false;
+    let wasPlayingBeforeSeek = false;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60) || 0;
+      const s = Math.floor(sec % 60) || 0;
+      return m + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function loadTrack(index) {
+      const track = tracks[index];
+      audio.src = track.src;
+      audio.load();
+      titleText.textContent  = track.title;
+      artistText.textContent = track.artist;
+      coverImg.src           = track.cover;
+      progressFill.style.width = '0%';
+      currentEl.textContent  = '0:00';
+      durationEl.textContent = '0:00';
+    }
+
+    loadTrack(currentIndex);
+
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = formatTime(audio.duration || 0);
+    });
+
+    playBtn.addEventListener('click', () => {
+      if (!isPlaying) audio.play();
+      else audio.pause();
+    });
+
+    audio.addEventListener('play', () => {
+      isPlaying = true;
+      playIcon.classList.remove('icon-play');
+      playIcon.classList.add('icon-pause');
+    });
+
+    audio.addEventListener('pause', () => {
+      isPlaying = false;
+      playIcon.classList.remove('icon-pause');
+      playIcon.classList.add('icon-play');
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration || isSeeking) return;
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progressFill.style.width = percent + '%';
+      currentEl.textContent = formatTime(audio.currentTime);
+    });
+
+    function nextTrack() {
+      currentIndex = (currentIndex + 1) % tracks.length;
+      loadTrack(currentIndex);
+      audio.play();
+    }
+
+    function prevTrack() {
+      currentIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentIndex);
+      audio.play();
+    }
+
+    nextBtn.addEventListener('click', nextTrack);
+    prevBtn.addEventListener('click', prevTrack);
+    audio.addEventListener('ended', nextTrack);
+
+    let canSeek = false;
+    audio.addEventListener('canplay', () => { canSeek = true; });
+
+
+    // SEEK: klik & drag, audio diam saat drag lalu lanjut saat lepas
+    function seekTo(clientX) {
+      if (!canSeek || !audio.duration) return; // di iPhone cegah seek terlalu cepat
+      const rect = progressBar.getBoundingClientRect();
+      let x = clientX - rect.left;
+      x = Math.max(0, Math.min(x, rect.width));
+      const percent = x / rect.width;
+      audio.currentTime = audio.duration * percent;
+      progressFill.style.width = (percent * 100) + '%';
+      currentEl.textContent = formatTime(audio.currentTime);
+    }
+
+
+    // klik sekali
+    progressBar.addEventListener('click', (e) => {
+      if (isSeeking) return;
+      seekTo(e.clientX);
+    });
+
+    // mouse drag
+    progressBar.addEventListener('mousedown', (e) => {
+      isSeeking = true;
+      wasPlayingBeforeSeek = !audio.paused;
+      audio.pause();
+      seekTo(e.clientX);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isSeeking) return;
+      seekTo(e.clientX);
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isSeeking) return;
+      isSeeking = false;
+      if (wasPlayingBeforeSeek) audio.play();
+    });
+
+    // touch drag
+    progressBar.addEventListener('touchstart', (e) => {
+      isSeeking = true;
+      wasPlayingBeforeSeek = !audio.paused;
+      audio.pause();
+      seekTo(e.touches[0].clientX);
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!isSeeking) return;
+      seekTo(e.touches[0].clientX);
+    });
+
+    document.addEventListener('touchend', () => {
+      if (!isSeeking) return;
+      isSeeking = false;
+      if (wasPlayingBeforeSeek) audio.play();
+    });
+  </script>
+</body>
+</html>
